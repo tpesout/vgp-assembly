@@ -2,74 +2,40 @@
 FROM tpesout/modules:latest
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
- ### perl
- # 5.18.2
- WORKDIR /opt/perl
- RUN wget https://www.cpan.org/src/5.0/perl-5.18.2.tar.gz && \
- 	tar -xvf  perl-5.18.2.tar.gz && \
- 	rm -r /opt/perl/perl-5.18.2.tar.gz && \
- 	cd perl-5.18.2 && \
- 	./Configure -des -Dprefix=/opt/perl/perl-5.18.2 && \
- 	make && \
- 	make install && \
- 	mkdir /root/bin/perl_5.18.2 && \
- 	cp perl /root/bin/perl_5.18.2 && \
- 	mkdir /root/modules/perl && \
- 	echo "#%Module" >>/root/modules/perl/5.18.2 && \
-     echo "prepend-path PATH /root/bin/perl_5.18.2" >>/root/modules/perl/5.18.2
+### repeatmasker
+# 4.1.0
+WORKDIR /opt/repeatmasker
+RUN wget http://www.repeatmasker.org/RepeatMasker-4.1.0.tar.gz && \
+     tar -xvf RepeatMasker-4.1.0.tar.gz && \
+     rm -r RepeatMasker-4.1.0.tar.gz && \
+     mv RepeatMasker RepeatMasker-4.1.0 && \
+     cd RepeatMasker-4.1.0/ && \
+     git clone https://github.com/oushujun/LTR_retriever.git && cd LTR_retriever && git checkout 72960e84951c52ff289465eae8f1ff8b04f82e69 && cp bin/trf409.linux64 .. && cd .. && rm -rf LTR_retriever/ && chmod +x trf409.linux64  &&   mv trf409.linux64 /bin && \
+     cpan Text::Soundex && \
+     touch /opt/repeatmasker/RepeatMasker-4.1.0/util/maskFile.pl && \
+     ./configure -trf_prgm /bin/trf409.linux64 -hmmer_dir /root/bin/hmmer_3.2.1 -default_search_engine hmmer && \
+     ln -s /opt/repeatmasker/RepeatMasker-4.1.0 /root/bin/repeatmasker_4.1.0 && \
+     mkdir /root/modules/repeatmasker && \
+     echo "#%Module" >> /root/modules/repeatmasker/4.1.0 && \
+     echo "append-path PATH /root/bin/repeatmasker_4.1.0" >> /root/modules/repeatmasker/4.1.0  && \
+     echo "#%Module" >>/root/modules/repeatmasker/.modulerc && \
+     echo "module-version /4.1.0 default" >>/root/modules/repeatmasker/.modulerc
 
- ### freebayes
- # 1.3.1
- WORKDIR /opt/freebayes
- RUN git clone --recursive git://github.com/ekg/freebayes.git && \
- 	cd freebayes && \
- 	make && \
- 	mkdir /root/bin/freebayes_1.3.1  && \
- 	cp bin/freebayes /root/bin/freebayes_1.3.1 && \
- 	mkdir /root/modules/freebayes && \
-     echo "#%Module" >>/root/modules/freebayes/1.3.1 && \
-     echo "append-path PATH /root/bin/freebayes_1.3.1" >>/root/modules/freebayes/1.3.1 && \
-     echo "#%Module" >>/root/modules/freebayes/.modulerc && \
-     echo "module-version /1.3.1 default" >>/root/modules/freebayes/.modulerc 
-
-# 1.2.0
- WORKDIR /opt/freebayes
- RUN cd freebayes && \
- 	git checkout v1.2.0 && \
- 	make && \
- 	mkdir /root/bin/freebayes_1.2.0  && \
- 	cp bin/freebayes /root/bin/freebayes_1.2.0 && \
-     echo "#%Module" >>/root/modules/freebayes/1.2.0 && \
-     echo "prepend-path PATH /root/bin/freebayes_1.2.0" >>/root/modules/freebayes/1.2.0
-
-### picard 
-# 2.9.2
- WORKDIR /opt/picard
- RUN git clone https://github.com/broadinstitute/picard.git && \
-     cd picard/ && \
-     git checkout 2.9.2 && \
-     ./gradlew shadowJar && \
-     mv build/libs/picard-2.9.2-SNAPSHOT-all.jar build/libs/picard.jar && \
-     mkdir /root/bin/picard_2.9.2 && \
-     cp build/libs/picard.jar /root/bin/picard_2.9.2 && \
-     mkdir /root/modules/picard && \
-     echo "#%Module" >>/root/modules/picard/2.9.2 && \
-     echo "setenv PICARD_PATH /root/bin/picard_2.9.2" >> /root/modules/picard/2.9.2
-
-# 2.20.6
- WORKDIR /opt/picard
- RUN cd picard/ && \
-     git checkout 2.20.6 && \
-     ./gradlew shadowJar && \
-     mv build/libs/picard-2.20.6-SNAPSHOT-all.jar build/libs/picard.jar && \
-     mkdir /root/bin/picard_2.20.6 && \
-     cp build/libs/picard.jar /root/bin/picard_2.20.6 && \
-     echo "#%Module" >>/root/modules/picard/2.20.6 && \
-     echo "setenv PICARD_PATH /root/bin/picard_2.20.6" >> /root/modules/picard/2.20.6
-
+# 4.0.7
+WORKDIR /opt/repeatmasker
+RUN wget http://www.repeatmasker.org/RepeatMasker-open-4-0-7.tar.gz && \
+     tar -xvf RepeatMasker-open-4-0-7.tar.gz && \
+     rm -r RepeatMasker-open-4-0-7.tar.gz && \
+     mv RepeatMasker RepeatMasker-4.0.7 && \
+     cd RepeatMasker-4.0.7/ && \
+     cpan Text::Soundex && \
+     touch /opt/repeatmasker/RepeatMasker-4.0.7/util/maskFile.pl && \
+     printf '\n/bin/trf409.linux64\n4\n/root/bin/hmmer_3.2.1\ny\n5\n' | perl ./configure --re_exec_perl=/usr/bin/perl && \
+     ln -s /opt/repeatmasker/RepeatMasker-4.0.7 /root/bin/repeatmasker_4.0.7 && \
+     echo "#%Module" >> /root/modules/repeatmasker/4.0.7 && \
+     echo "prepend-path PATH /root/bin/repeatmasker_4.0.7" >> /root/modules/repeatmasker/4.0.7 
 
 WORKDIR /root/scripts/bionano/
 COPY _docker_bionano.sh tmp/* ./
-COPY trf409.linux64 tmp/
 WORKDIR /data
 ENTRYPOINT ["bash", "-i", "/root/scripts/bionano/_docker_bionano.sh"]
