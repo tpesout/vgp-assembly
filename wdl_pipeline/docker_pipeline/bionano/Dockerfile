@@ -1,5 +1,4 @@
-#TODO FROM tpesout/modules:4.3.0--c999abdc958fe45c735dca093555b5413aecb678
-FROM tpesout/modules:latest
+FROM tpesout/vgp_base:latest
 MAINTAINER Trevor Pesout, tpesout@ucsc.edu
 
 ### repeatmasker
@@ -35,7 +34,13 @@ RUN wget http://www.repeatmasker.org/RepeatMasker-open-4-0-7.tar.gz && \
      echo "#%Module" >> /root/modules/repeatmasker/4.0.7 && \
      echo "prepend-path PATH /root/bin/repeatmasker_4.0.7" >> /root/modules/repeatmasker/4.0.7 
 
+#TODO actually install bionano
+
 WORKDIR /root/scripts/bionano/
-COPY _docker_bionano.sh tmp/* ./
+COPY tmp/*.sh ./
+
+WORKDIR /root/config/bionano
+COPY tmp/*.xml ./
+
 WORKDIR /data
 ENTRYPOINT ["bash", "-i", "/root/scripts/bionano/_docker_bionano.sh"]
