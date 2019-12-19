@@ -36,11 +36,14 @@ RUN wget http://www.repeatmasker.org/RepeatMasker-open-4-0-7.tar.gz && \
 
 #TODO actually install bionano
 
-WORKDIR /root/scripts/bionano/
-COPY tmp/*.sh ./
+#WORKDIR /root/scripts/bionano/
+#COPY tmp/*.sh ./
 
-WORKDIR /root/config/bionano
-COPY tmp/*.xml ./
+#WORKDIR /root/config/bionano
+#COPY tmp/*.xml ./
+
+WORKDIR /root/scripts/bionano
+COPY _docker_bionano.sh tmp/*.sh ./
 
 WORKDIR /data
 ENTRYPOINT ["bash", "-i", "/root/scripts/bionano/_docker_bionano.sh"]
