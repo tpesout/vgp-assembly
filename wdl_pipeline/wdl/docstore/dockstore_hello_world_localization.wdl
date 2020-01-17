@@ -14,9 +14,7 @@ workflow HelloWorldLocalization {
   scatter (file in READS) {
     call extractReads as extractReadz {
       input:
-        readFile=file,
-        dockerRepository="tpesout",
-        dockerTag="latest"
+        readFile=file
       }
   }
 
@@ -72,11 +70,9 @@ task head {
 task extractReads {
   input {
     File readFile
-    String dockerRepository
-    String dockerTag
   }
 
-  String dockerImage = "${dockerRepository}/vgp_base:${dockerTag}"
+#  String dockerImage = "${dockerRepository}/vgp_base:${dockerTag}"
 
 	command <<<
     # initialize modules
@@ -116,7 +112,7 @@ task extractReads {
 	}
 
   runtime {
-    docker: dockerImage
+    docker: "tpesout/vgp_base:latest"
     cpu: 1
   }
 
