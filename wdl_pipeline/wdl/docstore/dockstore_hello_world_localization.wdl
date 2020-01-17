@@ -1,5 +1,7 @@
 version 1.0
 
+import "https://raw.githubusercontent.com/tpesout/vgp-assembly/803fca4bbe74f77ff5a7044bef5c2f7062fe648e/wdl_pipeline/wdl/tasks/extract_reads.wdl" as xtractReads
+
 
 workflow HelloWorldLocalization {
     input {
@@ -12,23 +14,25 @@ workflow HelloWorldLocalization {
             myFile=REFERENCE
     }
 
-    scatter (file in READS) {
-        call extractReads as extractReads_h {
-            input:
-                readFile=file
-        }
+    call xtractReads.runExtractReads as extractReadz {
+        input:
+            inputFiles=READS,
+            dockerRepository="tpesout",
+            dockerTag="latest"
+
     }
 
     call minimap2_idx as idx {
         input:
             refFasta=REFERENCE,
             minimapPreset="map-ont",
-            threadCount=1
+            threadCount=1,
+            dockerImage="tpesout/vgp_minimap2:latest"
     }
 
     output {
         File fileOut = single_h.myHead
-        Array[File] filesOut = extractReads_h.outputFile
+        Array[File] filesOut = extractReadz.reads
         File refIdx = idx.minimap2Index
     }
 }
@@ -116,55 +120,64 @@ task extractReads {
 }
 
 task minimap2_idx {
-    input {
-        File refFasta
-        Int threadCount
-        String? minimapPreset
+  input {
+    File refFasta
+    Int threadCount
+    String? minimapPreset
+    String dockerImage
+  }
+
+  String defaultMinimapPreset = select_first([minimapPreset, ""])
+
+	command <<<
+    # initialize modules
+    source /usr/local/Modules/init/bash
+    module use /root/modules/
+    # Set the exit code of a pipeline to that of the rightmost command
+    # to exit with a non-zero status, or zero if all commands of the pipeline exit
+    set -o pipefail
+    # cause a bash script to exit immediately when a command fails
+    set -e
+    # cause the bash shell to treat unset variables as an error and exit immediately
+    set -u
+    # echo each line of the script to stdout so we can see what is happening
+    # to turn off echo do 'set +o xtrace'
+    set -o xtrace
+
+    # get name of output file
+    ln -s ~{refFasta}
+    filename=$(basename -- "~{refFasta}")
+    prefix="${filename%.*}"
+    suffix="${filename##*.}"
+    if [[ "${suffix}" == "gz" ]]; then
+      prefix="${prefix##*.}"
+    fi
+    echo $prefix >outputBase
+
+    # index ref
+    export SLURM_CPUS_PER_TASK=~{threadCount}
+    bash /root/scripts/minimap2/minimap2_idx.sh $filename ~{defaultMinimapPreset}
+
+    mkdir output
+    mv ${prefix}.idx output
+	>>>
+
+	output {
+	    String outputBase = read_string("outputBase")
+		File minimap2Index = glob("output/*.idx")[0]
+	}
+
+  runtime {
+    docker: dockerImage
+    cpu: threadCount
+    memory: "32 GB"
+  }
+
+  parameter_meta {
+    refFasta: {
+      description: "Reference genome in FASTA format",
+      stream: true,
+      localization_optional: true
     }
-
-    String defaultMinimapPreset = select_first([minimapPreset, ""])
-
-    command <<<
-        # initialize modules
-        source /usr/local/Modules/init/bash
-        module use /root/modules/
-        # Set the exit code of a pipeline to that of the rightmost command
-        # to exit with a non-zero status, or zero if all commands of the pipeline exit
-        set -o pipefail
-        # cause a bash script to exit immediately when a command fails
-        set -e
-        # cause the bash shell to treat unset variables as an error and exit immediately
-        set -u
-        # echo each line of the script to stdout so we can see what is happening
-        # to turn off echo do 'set +o xtrace'
-        set -o xtrace
-
-        # get name of output file
-        ln -s ~{refFasta}
-        filename=$(basename -- "~{refFasta}")
-        prefix="${filename%.*}"
-        suffix="${filename##*.}"
-        if [[ "${suffix}" == "gz" ]]; then
-        prefix="${prefix##*.}"
-        fi
-        echo $prefix >outputBase
-
-        # index ref
-        export SLURM_CPUS_PER_TASK=~{threadCount}
-        bash /root/scripts/minimap2/minimap2_idx.sh $filename ~{defaultMinimapPreset}
-
-        mkdir output
-        mv ${prefix}.idx output
-    >>>
-
-    output {
-        String outputBase = read_string("outputBase")
-        File minimap2Index = glob("output/*.idx")[0]
-    }
-
-    runtime {
-        docker: "tpesout/vgp_minimap2:latest"
-        cpu: threadCount
-        memory: "32 GB"
-    }
+  }
 }
