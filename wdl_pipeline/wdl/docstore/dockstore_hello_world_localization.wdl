@@ -21,7 +21,7 @@ workflow HelloWorldLocalization {
 
     output {
         File fileOut = single_h.myHead
-        Array[File] filesOut = extractReads_h.myHead
+        Array[File] filesOut = extractReads_h.outputFile
     }
 }
 
