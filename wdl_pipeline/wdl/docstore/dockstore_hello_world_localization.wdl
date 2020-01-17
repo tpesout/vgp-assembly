@@ -33,7 +33,7 @@ workflow HelloWorldLocalization {
 
     output {
         File fileOut = single_h.myHead
-        Array[File] filesOut = extractReadz.reads
+        Array[File] filesOut = extractReadz.outputFile
         File refIdx = idx.minimap2Index
     }
 }
