@@ -15,7 +15,7 @@ workflow HelloWorldLocalization {
     }
 
   scatter (file in READS) {
-    call xtractReads.extractReads as extractReadz {
+    call extractReads as extractReadz {
       input:
         readFile=file,
         dockerRepository="tpesout",
@@ -73,9 +73,13 @@ task head {
 }
 
 task extractReads {
-    input {
-        File readFile
-    }
+  input {
+    File readFile
+    String dockerRepository
+    String dockerTag
+  }
+
+  String dockerImage = "${dockerRepository}/vgp_base:${dockerTag}"
 
 	command <<<
     # initialize modules
@@ -110,14 +114,22 @@ task extractReads {
     fi
 	>>>
 
-    output {
-        File outputFile = flatten([glob("output/*"), [readFile]])[0]
-    }
+	output {
+	  File outputFile = flatten([glob("output/*"), [readFile]])[0]
+	}
 
-    runtime {
-        docker: "tpesout/vgp_base:latest"
-        cpu: 1
+  runtime {
+    docker: dockerImage
+    cpu: 1
+  }
+
+  parameter_meta {
+    readFile: {
+      description: "Reads file in BAM, FASTQ, or FASTA format (optionally gzipped)",
+      stream: true,
+      localization_optional: true
     }
+  }
 }
 
 task minimap2_idx {
