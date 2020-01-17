@@ -14,13 +14,14 @@ workflow HelloWorldLocalization {
             myFile=REFERENCE
     }
 
-    call xtractReads.runExtractReads as extractReadz {
-        input:
-            inputFiles=READS,
-            dockerRepository="tpesout",
-            dockerTag="latest"
-
-    }
+  scatter (file in READS) {
+    call xtractReads.extractReads as extractReadz {
+      input:
+        readFile=file,
+        dockerRepository="tpesout",
+        dockerTag="latest"
+      }
+  }
 
     call minimap2_idx as idx {
         input:
