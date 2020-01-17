@@ -1,8 +1,5 @@
 version 1.0
 
-import "https://raw.githubusercontent.com/tpesout/vgp-assembly/803fca4bbe74f77ff5a7044bef5c2f7062fe648e/wdl_pipeline/wdl/tasks/extract_reads.wdl" as xtractReads
-
-
 workflow HelloWorldLocalization {
     input {
         File REFERENCE
