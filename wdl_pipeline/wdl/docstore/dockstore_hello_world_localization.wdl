@@ -167,4 +167,12 @@ task minimap2_idx {
         cpu: threadCount
         memory: "32 GB"
     }
+
+    parameter_meta {
+        refFasta: {
+          description: "Reference genome in FASTA format",
+          stream: true,
+          localization_optional: true
+        }
+    }
 }
