@@ -5,7 +5,6 @@ workflow HelloWorldLocalization {
     input {
         File REFERENCE
         Array[File] READS
-        String dockerImage = "tpesout/vgp_minimap2:latest"
     }
 
     call head as single_h {
@@ -24,8 +23,7 @@ workflow HelloWorldLocalization {
         input:
             refFasta=REFERENCE,
             minimapPreset="map-ont",
-            threadCount=1,
-            dockerImage=dockerImage
+            threadCount=1
     }
 
     output {
@@ -122,7 +120,7 @@ task minimap2_idx {
         File refFasta
         Int threadCount
         String? minimapPreset
-        String dockerImage
+        String dockerImage="tpesout/vgp_minimap2:latest"
     }
 
     String defaultMinimapPreset = select_first([minimapPreset, ""])
