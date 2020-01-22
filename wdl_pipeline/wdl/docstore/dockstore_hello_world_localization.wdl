@@ -5,6 +5,7 @@ workflow HelloWorldLocalization {
     input {
         File REFERENCE
         Array[File] READS
+        String dockerImage = "tpesout/vgp_minimap2:latest"
     }
 
     call head as single_h {
@@ -24,7 +25,7 @@ workflow HelloWorldLocalization {
             refFasta=REFERENCE,
             minimapPreset="map-ont",
             threadCount=1,
-            dockerImage="tpesout/vgp_minimap2:latest"
+            dockerImage=dockerImage
     }
 
     output {
