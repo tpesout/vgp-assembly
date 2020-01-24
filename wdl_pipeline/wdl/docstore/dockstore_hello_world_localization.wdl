@@ -173,8 +173,7 @@ task minimap2_idx {
     parameter_meta {
         refFasta: {
           description: "Reference genome in FASTA format",
-          stream: true,
-          localization_optional: true
+          stream: true
         }
     }
 }
