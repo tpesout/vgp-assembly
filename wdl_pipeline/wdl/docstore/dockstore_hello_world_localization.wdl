@@ -5,6 +5,8 @@ workflow HelloWorldLocalization {
     input {
         File REFERENCE
         Array[File] READS
+        String DOCKER_REPO
+        String DOCKER_TAG
     }
 
     call head as single_h {
@@ -24,7 +26,8 @@ workflow HelloWorldLocalization {
             refFasta=REFERENCE,
             minimapPreset="map-ont",
             threadCount=1,
-            dockerImage="tpesout/vgp_minimap2:latest"
+            dockerRepo=DOCKER_REPO,
+            dockerTag=DOCKER_TAG
     }
 
     output {
@@ -121,7 +124,8 @@ task minimap2_idx {
         File refFasta
         Int threadCount
         String? minimapPreset
-        String dockerImage
+        String dockerRepo
+        String dockerTag
     }
 
     String defaultMinimapPreset = select_first([minimapPreset, ""])
@@ -165,7 +169,7 @@ task minimap2_idx {
     }
 
     runtime {
-        docker: dockerImage
+        docker: dockerRepo + "/vgp_minimap2:" + dockerTag
         cpu: threadCount
         memory: "32 GB"
     }
